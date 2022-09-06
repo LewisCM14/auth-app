@@ -13,7 +13,12 @@ const AuthForm = () => {
     setIsLogin((prevState) => !prevState);
   };
 
-  // triggered on form submission
+  /**
+   * Using the fetch method sends a POST request to the relevant firebase api with key,
+   * passing it a JSON object in the required format, including the entered email & password.
+   * returnSecureToken key must always be true (refer to firebase docs).
+   * the headers ensure the REST API knows it's JSON data being passed.
+   */
   const submitHandler = (event) => {
     event.preventDefault();
 
@@ -23,35 +28,31 @@ const AuthForm = () => {
 
     // validate login credentials
 
-    /**
-     * LOGIN MODE
-     *
-     * CREATE USER MODE
-     * Using the fetch method sends a POST request to the firebase api with key,
-     * passing it a JSON object in the required format, including the entered email & password.
-     * returnSecureToken key must always be true (refer to firebase docs).
-     * the headers ensure the REST API knows it's JSON data being passed.
-     */
     setIsLoading(true);
+    let url;
     if (isLogin) {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBV0lUxTg1UPsrG9vJ6iC9ic0lQbGT_R1k";
     } else {
-      fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBV0lUxTg1UPsrG9vJ6iC9ic0lQbGT_R1k",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then((res) => {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBV0lUxTg1UPsrG9vJ6iC9ic0lQbGT_R1k";
+    }
+
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        email: enteredEmail,
+        password: enteredPassword,
+        returnSecureToken: true,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
         setIsLoading(true);
         if (res.ok) {
-          // handle response
+          return res.json();
         } else {
           // collect and convert the received data
           return res.json().then((data) => {
@@ -59,11 +60,16 @@ const AuthForm = () => {
             if (data && data.error && data.error.message) {
               errorMessage = data.error.message; // drill into the specific error message returned
             }
-            alert(errorMessage);
+            throw new Error(errorMessage); // forward the error message to the catch block
           });
         }
+      })
+      .then((data) => {  // block for successful request
+        console.log(data);
+      })
+      .catch((err) => {
+        alert(err.message);
       });
-    }
   };
 
   return (
@@ -84,7 +90,9 @@ const AuthForm = () => {
           />
         </div>
         <div className={classes.actions}>
-          {!isLoading && <button>{isLogin ? "Login" : "Create Account"}</button>}
+          {!isLoading && (
+            <button>{isLogin ? "Login" : "Create Account"}</button>
+          )}
           {isLoading && <p>Sending Request...</p>}
           <button
             type="button"
