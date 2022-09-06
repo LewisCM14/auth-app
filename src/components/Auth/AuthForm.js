@@ -5,7 +5,9 @@ import classes from "./AuthForm.module.css";
 const AuthForm = () => {
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
+
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -30,6 +32,7 @@ const AuthForm = () => {
      * returnSecureToken key must always be true (refer to firebase docs).
      * the headers ensure the REST API knows it's JSON data being passed.
      */
+    setIsLoading(true);
     if (isLogin) {
     } else {
       fetch(
@@ -46,11 +49,17 @@ const AuthForm = () => {
           },
         }
       ).then((res) => {
+        setIsLoading(true);
         if (res.ok) {
           // handle response
         } else {
-          return res.json().then((data) => { // collect and convert the received data, log it.
-            console.log(data);
+          // collect and convert the received data
+          return res.json().then((data) => {
+            let errorMessage = "Authentication failed!"; // generic error message
+            if (data && data.error && data.error.message) {
+              errorMessage = data.error.message; // drill into the specific error message returned
+            }
+            alert(errorMessage);
           });
         }
       });
@@ -75,7 +84,8 @@ const AuthForm = () => {
           />
         </div>
         <div className={classes.actions}>
-          <button>{isLogin ? "Login" : "Create Account"}</button>
+          {!isLoading && <button>{isLogin ? "Login" : "Create Account"}</button>}
+          {isLoading && <p>Sending Request...</p>}
           <button
             type="button"
             className={classes.toggle}
