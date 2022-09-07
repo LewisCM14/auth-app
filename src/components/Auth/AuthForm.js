@@ -1,10 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
+import AuthContext from "../../store/auth-context";
 
 import classes from "./AuthForm.module.css";
 
 const AuthForm = () => {
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
+
+  const authCtx = useContext(AuthContext); // allow use of the auth-context provider in this component
 
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +68,7 @@ const AuthForm = () => {
         }
       })
       .then((data) => {  // block for successful request
-        console.log(data);
+        authCtx.login(data.idToken); // passes the id token from firebase to the login function of the auth-context provider
       })
       .catch((err) => {
         alert(err.message);
