@@ -24,7 +24,7 @@ export const AuthContextProvider = (props) => {
     setToken(token);
   };
 
-  const logoutHandler = () => {
+  const logoutHandler = () => {  // clears token, alerting the client that the user is no longer authorized
     setToken(null);
   };
 
