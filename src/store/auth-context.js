@@ -11,6 +11,15 @@ const AuthContext = React.createContext({
   logout: () => {},
 });
 
+const calculatedRemainingTime = (expirationTime) => {
+    const currentTime = new Date().getTime(); // collect current time stamp in ms
+    const adjExpirationTime = new Date(expirationTime).getTime();  // finds the value of the expiration time
+
+    const remainingDuration = adjExpirationTime - currentTime;  // calculate time left
+
+    return remainingDuration;
+};
+
 /**
  * context provider for authentication state,
  * manages the token state, using it to determine user state and handle login/logout functionality
@@ -21,14 +30,18 @@ export const AuthContextProvider = (props) => {
 
   const userIsLoggedIn = !!token; // if 'token' holds a string value user must be logged in
 
-  const loginHandler = (token) => {
-    setToken(token);
-    localStorage.setItem('token', token); // store the auth token in the browser
-  };
-
   const logoutHandler = () => {  // clears token, alerting the client that the user is no longer authorized
     setToken(null);
     localStorage.removeItem('token'); // remove the token key from local storage
+  };
+
+  const loginHandler = (token, expirationTime) => {
+    setToken(token);
+    localStorage.setItem('token', token); // store the auth token in the browser
+
+    const remainingTime = calculatedRemainingTime(expirationTime);  // use the helper function to calculate time left
+    
+    setTimeout(logoutHandler, remainingTime);
   };
 
   const contextValue = {

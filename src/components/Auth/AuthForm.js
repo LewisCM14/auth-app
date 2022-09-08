@@ -71,8 +71,11 @@ const AuthForm = () => {
       })
       .then((data) => {
         // block for successful request
-        authCtx.login(data.idToken); // passes the id token from firebase to the login function of the auth-context provider
-        history.replace('/');  // use the history object to call the replace method
+        const expirationTime = new Date(
+          new Date().getTime() + +data.expiresIn * 1000
+        ); // collects the time remaining and converts to ms from seconds
+        authCtx.login(data.idToken, expirationTime.toISOString()); // passes the id token from firebase to the login function of the auth-context provider
+        history.replace("/"); // use the history object to call the replace method
       })
       .catch((err) => {
         alert(err.message);
