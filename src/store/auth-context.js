@@ -16,16 +16,19 @@ const AuthContext = React.createContext({
  * manages the token state, using it to determine user state and handle login/logout functionality
  */
 export const AuthContextProvider = (props) => {
-  const [token, setToken] = useState(null);
+  const initialToken = localStorage.getItem('token'); // if stored, collects the token key
+  const [token, setToken] = useState(initialToken);
 
   const userIsLoggedIn = !!token; // if 'token' holds a string value user must be logged in
 
   const loginHandler = (token) => {
     setToken(token);
+    localStorage.setItem('token', token); // store the auth token in the browser
   };
 
   const logoutHandler = () => {  // clears token, alerting the client that the user is no longer authorized
     setToken(null);
+    localStorage.removeItem('token'); // remove the token key from local storage
   };
 
   const contextValue = {
